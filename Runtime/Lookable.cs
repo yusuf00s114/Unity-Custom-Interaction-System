@@ -28,8 +28,8 @@ public class Lookable : MonoBehaviour, ILookable
     private void Start()
     {
         if (gameObject.layer != LayerMask.NameToLayer("Lookable"))
-            Debug.LogWarning("Make sure this GameObject (" + gameObject.name +
-                             ") is on the Lookable layer. It is currently on the " + gameObject.layer + " layer");
+            //Debug.LogWarning("Make sure this GameObject (" + gameObject.name +
+            //                ") is on the Lookable layer. It is currently on the " + gameObject.layer + " layer");
 #if UNITY_EDITOR
         Assert.AreEqual(gameObject.layer, LayerMask.NameToLayer("Lookable"));
 #endif

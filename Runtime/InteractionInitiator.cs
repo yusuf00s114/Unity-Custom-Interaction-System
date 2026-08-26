@@ -67,8 +67,8 @@ public class InteractionInitiator : MonoBehaviour
 
     public void ToggleInteractionEnabled(bool value)
     {
-        Logger.Log("Setting _isEnabled in InteractionInitiator of " + gameObject.name + " to " + value
-            , LogChannel.INTERACTION_SYSTEM);
+        //Logger.Log("Setting _isEnabled in InteractionInitiator of " + gameObject.name + " to " + value
+        //    , LogChannel.INTERACTION_SYSTEM);
         isEnabled = value;
     }
 
@@ -83,22 +83,22 @@ public class InteractionInitiator : MonoBehaviour
         if (result == null) return;
         if (!isEnabled)
         {
-            Logger.Log("Interaction initiation is turned off for " + gameObject.name
-                                                                   + " (_isEnabled = false). " +
-                       "Returning from ExecuteInteraction.", LogChannel.INTERACTION_SYSTEM);
+            //Logger.Log("Interaction initiation is turned off for " + gameObject.name
+            //                                                       + " (_isEnabled = false). " +
+             //          "Returning from ExecuteInteraction.", LogChannel.INTERACTION_SYSTEM);
             return;
         }
-        Logger.Log("Trying to execute interaction " + result, LogChannel.INTERACTION_SYSTEM);
+        //Logger.Log("Trying to execute interaction " + result, LogChannel.INTERACTION_SYSTEM);
         if (respectCooldown && _timer < interactionCooldownSecs) return;
         if (_lookup.TryGetValue(result.interactionStrategy, out var unityEvent))
         {
-            Logger.Log("Executing interaction " + result, LogChannel.INTERACTION_SYSTEM);
+            //Logger.Log("Executing interaction " + result, LogChannel.INTERACTION_SYSTEM);
             unityEvent?.Invoke(result.target);
         }
         else
         {
-            Logger.LogWarning($"{name} has no Inspector handler for {result.interactionStrategy.name}",
-                LogChannel.INTERACTION_SYSTEM);
+            //Logger.LogWarning($"{name} has no Inspector handler for {result.interactionStrategy.name}",
+            //    LogChannel.INTERACTION_SYSTEM);
         }
 
         _timer = 0;
@@ -129,8 +129,8 @@ public class InteractionInitiator : MonoBehaviour
         {
             if (interrupt?.Invoke() == true)
             {
-                Debug.Log("Hold interaction execution interrupted before " + result +
-                          " was able to be executed.");
+                //Debug.Log("Hold interaction execution interrupted before " + result +
+                //          " was able to be executed.");
                 return;
             }
 
@@ -153,8 +153,8 @@ public class InteractionInitiator : MonoBehaviour
         {
             if (interrupt?.Invoke() == true)
             {
-                Logger.Log("Press interaction execution interrupted before the following was " +
-                           "able to be executed: \n" + result, LogChannel.INTERACTION_SYSTEM);
+                //Logger.Log("Press interaction execution interrupted before the following was " +
+                //           "able to be executed: \n" + result, LogChannel.INTERACTION_SYSTEM);
                 return;
             }
 
@@ -177,8 +177,8 @@ public class InteractionInitiator : MonoBehaviour
         {
             if (interrupt?.Invoke() == true)
             {
-                Logger.Log("Press interaction execution interrupted before the following was " +
-                           "able to be executed: \n" + result, LogChannel.INTERACTION_SYSTEM);
+                //Logger.Log("Press interaction execution interrupted before the following was " +
+                //           "able to be executed: \n" + result, LogChannel.INTERACTION_SYSTEM);
                 return;
             }
 
