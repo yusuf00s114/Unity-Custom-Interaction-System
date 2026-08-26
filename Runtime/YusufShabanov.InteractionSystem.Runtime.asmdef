@@ -1,0 +1,9 @@
+{
+    "name": "YusufShabanov.InteractionSystem.Runtime",
+    "rootNamespace": "YusufShabanov.InteractionSystem",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "autoReferenced": true
+}

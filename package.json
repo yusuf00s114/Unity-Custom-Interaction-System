@@ -1,0 +1,11 @@
+{
+  "name": "com.yusufshabanov.interactionsystem",
+  "version": "1.0.0",
+  "displayName": "Interaction System",
+  "description": "Interaction System for Unity.",
+  "unity": "6.3",
+  "author": {
+    "name": "Yusuf Shabanov",
+    "email": "yusuf00s114@gmail.com"
+  }
+}

@@ -1,0 +1,11 @@
+{
+    "name": "YusufShabanov.InteractionSystem.Editor",
+    "rootNamespace": "YusufShabanov.InteractionSystem.Editor",
+    "references": [
+        "YusufShabanov.InteractionSystem.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": []
+}
