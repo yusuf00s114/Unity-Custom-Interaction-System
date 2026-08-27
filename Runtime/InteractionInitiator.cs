@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using YusufShabanov.InteractionSystem;
 
 public class InteractionInitiator : MonoBehaviour
 {
@@ -17,16 +18,10 @@ public class InteractionInitiator : MonoBehaviour
         "Defines how each interaction strategy will be executed. Strategies that aren't in the list won't be considered or executed.")]
     // maybe this will become a list of ScriptableObjects later
     private List<InteractionStrategyHandler> strategyMappings = new();
-    [SerializeField] private bool isEnabled = true;
+    [field: SerializeField] public bool IsEnabled { get; protected set; } = true;
     
-    public UnityEvent OnInteractionEnabled;
-    public UnityEvent OnInteractionDisabled;
 
     public IReadOnlyList<InteractionStrategy> InteractionStrategies => _interactionStrategies;
-    
-    
-    
-    public bool IsEnabled => isEnabled;
     
     // Internal lookup for performance
     private Dictionary<InteractionStrategy, UnityEvent<GameObject>> _lookup;
@@ -65,23 +60,103 @@ public class InteractionInitiator : MonoBehaviour
         //Debug.Log("Interaction Cooldown: " + _timer);
     }
 
-    public void ToggleInteractionEnabled(bool value)
+    /// <summary>
+    /// Executes a list of InteractionResult without waiting for the cooldown.
+    /// Executes only InteractionResult whose InteractionStrategyType is TStrategyType or a child of TStrategyType,
+    /// and whose interaction types include <paramref name="type"/>.
+    /// </summary>
+    /// <param name="type"></param>
+    /// <param name="interrupt">
+    /// Null by default. If not null, the interactions will stop being
+    /// executed when the function returns true.
+    /// </param>
+    public void ExecuteInteraction<TStrategyType>
+    (
+        List<InteractionResult> results,
+        InteractionType type,
+        Func<bool> interrupt = null) 
+        where TStrategyType: InteractionStrategyType
     {
-        //Logger.Log("Setting _isEnabled in InteractionInitiator of " + gameObject.name + " to " + value
-        //    , LogChannel.INTERACTION_SYSTEM);
-        isEnabled = value;
+        if (results == null) return;
+        
+        
+        foreach (var result in results)
+        {
+            if (interrupt?.Invoke() == true)
+            {
+                //Debug.Log("Hold interaction execution interrupted before " + result +
+                //          " was able to be executed.");
+                return;
+            }
+            
+            foreach (var t in result.interactionStrategy.InteractionStrategyTypes)
+            {
+                if (t is TStrategyType
+                    && result.interactionStrategy.InteractionTypes.HasFlag(type))
+                {
+                    ExecuteInteraction(result, false);
+                    break;
+                }
+            }
+
+        }
     }
 
-    /*public void ToggleInteractionEnabled()
+    /// <summary>
+    /// Executes a list of InteractionResult without waiting for the cooldown.
+    /// Executes only InteractionResult whose InteractionStrategyType is ONLY TStrategyType,
+    /// and whose interaction types include <paramref name="type"/>.
+    /// </summary>
+    /// <param name="type"></param>
+    /// <param name="interrupt">
+    /// Null by default. If not null, the interactions will stop being
+    /// executed when the function returns true.
+    /// </param>
+    public void ExecuteInteractionExact<TStrategyType>(
+        List<InteractionResult> results,
+        InteractionType type,
+        Func<bool> interrupt = null) 
+        where TStrategyType : InteractionStrategyType
     {
-        ToggleInteractionEnabled(!_isEnabled);
-    }*/
+        if (results == null) return;
 
+        foreach (var result in results)
+        {
+            if (interrupt?.Invoke() == true)
+            {
+                //Debug.Log("Hold interaction execution interrupted before " + result +
+                //          " was able to be executed.");
+                return;
+            }
+            
+            foreach (var t in result.interactionStrategy.InteractionStrategyTypes)
+            {
+                // Matches exact type only (ignores base classes and derived subclasses)
+                if (t.GetType() == typeof(TStrategyType)
+                    && result.interactionStrategy.InteractionTypes.HasFlag(type))
+                {
+                    ExecuteInteraction(result, false);
+                    break;
+                }
+            }
+
+        }
+    }
+
+    /// <summary>
+    ///     Executes a list of InteractionResult without waiting for the cooldown.
+    /// </summary>
+    public void ExecuteInteraction(List<InteractionResult> results)
+    {
+        if (results == null) return;
+        foreach (var result in results) ExecuteInteraction(result, false);
+    }
+    
     public void ExecuteInteraction(InteractionResult result, bool respectCooldown = true)
     {
         //Debug.Log("Interaction Cooldown: " + _timer);
         if (result == null) return;
-        if (!isEnabled)
+        if (!IsEnabled)
         {
             //Logger.Log("Interaction initiation is turned off for " + gameObject.name
             //                                                       + " (_isEnabled = false). " +
@@ -103,86 +178,5 @@ public class InteractionInitiator : MonoBehaviour
 
         _timer = 0;
     }
-
-    /// <summary>
-    ///     Executes a list of InteractionResult without waiting for the cooldown.
-    /// </summary>
-    /// <param name="results"></param>
-    public void ExecuteInteraction(List<InteractionResult> results)
-    {
-        if (results == null) return;
-        foreach (var result in results) ExecuteInteraction(result, false);
-    }
-
-    /// <summary>
-    ///     Executes all HoldInteractionStrategies from a list of InteractionResult without waiting for the cooldown.
-    /// </summary>
-    /// <param name="results"></param>
-    /// <param name="interrupt">
-    ///     Null by default. If not null, the interactions will stop being
-    ///     executed when the function returns true
-    /// </param>
-    public void ExecuteHoldInteraction(List<InteractionResult> results, Func<bool> interrupt = null)
-    {
-        if (results == null) return;
-        foreach (var result in results)
-        {
-            if (interrupt?.Invoke() == true)
-            {
-                //Debug.Log("Hold interaction execution interrupted before " + result +
-                //          " was able to be executed.");
-                return;
-            }
-
-            if (result.interactionStrategy is HoldInteractionStrategy) ExecuteInteraction(result, false);
-        }
-    }
-
-    /// <summary>
-    ///     Executes all PressInteractionStrategies from a list of InteractionResult without waiting for the cooldown.
-    /// </summary>
-    /// <param name="results"></param>
-    /// <param name="interrupt">
-    ///     Null by default. If not null, the interactions will stop being
-    ///     executed when the function returns true
-    /// </param>
-    public void ExecutePressInteraction(List<InteractionResult> results, Func<bool> interrupt = null)
-    {
-        if (results == null) return;
-        foreach (var result in results)
-        {
-            if (interrupt?.Invoke() == true)
-            {
-                //Logger.Log("Press interaction execution interrupted before the following was " +
-                //           "able to be executed: \n" + result, LogChannel.INTERACTION_SYSTEM);
-                return;
-            }
-
-            if (result.interactionStrategy is PressInteractionStrategy) ExecuteInteraction(result, false);
-        }
-    }
-
-    /// <summary>
-    ///     Executes all RightPressInteractionStrategies from a list of InteractionResult without waiting for the cooldown.
-    /// </summary>
-    /// <param name="results"></param>
-    /// <param name="interrupt">
-    ///     Null by default. If not null, the interactions will stop being
-    ///     executed when the function returns true
-    /// </param>
-    public void ExecuteRightPressInteraction(List<InteractionResult> results, Func<bool> interrupt = null)
-    {
-        if (results == null) return;
-        foreach (var result in results)
-        {
-            if (interrupt?.Invoke() == true)
-            {
-                //Logger.Log("Press interaction execution interrupted before the following was " +
-                //           "able to be executed: \n" + result, LogChannel.INTERACTION_SYSTEM);
-                return;
-            }
-
-            if (result.interactionStrategy is RightPressInteractionStrategy) ExecuteInteraction(result, false);
-        }
-    }
+    
 }

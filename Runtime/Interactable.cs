@@ -2,19 +2,19 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using YusufShabanov.InteractionSystem;
 
-[RequireComponent(typeof(Lookable))]
 public class Interactable : MonoBehaviour, IInteractable
 {
     [SerializeField] [Tooltip("What the interactable will do before returning interactionResults")]
     public UnityEvent OnInteract;
+    public event Action OnInteractAction;
 
     [SerializeField] private List<InteractionResult> interactionResults;
 
     public bool enableInteraction = true;
 
     public List<InteractionResult> InteractionResults => interactionResults;
-    public bool HasHoldInteraction => CheckForHoldInteraction();
     
     public IReadOnlyList<InteractionStrategy> InteractionStrategies => _interactionStrategies;
     
@@ -28,11 +28,6 @@ public class Interactable : MonoBehaviour, IInteractable
             _interactionStrategies.Add(r.interactionStrategy);
         }
     }
-
-    public void SetEnableInteraction(bool value)
-    {
-        enableInteraction = value;
-    }
     
     /// <summary>
     /// </summary>
@@ -41,18 +36,51 @@ public class Interactable : MonoBehaviour, IInteractable
     {
         if (!enableInteraction) return null;
         OnInteract?.Invoke();
+        OnInteractAction?.Invoke();
         return interactionResults;
     }
 
-    private bool CheckForHoldInteraction()
+    public bool HasInteractionStrategyType<TStrategyType>() where TStrategyType : InteractionStrategyType
     {
-        foreach (var r in InteractionResults)
+        foreach (var result in interactionResults)
         {
-            if (r.interactionStrategy is HoldInteractionStrategy)
+            foreach (var t in result.interactionStrategy.InteractionStrategyTypes)
+            {
+                if (t is TStrategyType)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    public bool HasInteractionStrategyTypeExact<TStrategyType>() where TStrategyType : InteractionStrategyType
+    {
+        foreach (var result in interactionResults)
+        {
+            foreach (var t in result.interactionStrategy.InteractionStrategyTypes)
+            {
+                if (t.GetType() == typeof(TStrategyType))
+                {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+
+    public bool HasInteractionType(InteractionType type)
+    {
+        foreach (var result in interactionResults)
+        {
+            if (result.interactionStrategy.InteractionTypes.HasFlag(type))
             {
                 return true;
             }
         }
+
         return false;
     }
 }
