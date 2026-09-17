@@ -7,8 +7,8 @@ using YusufShabanov.InteractionSystem;
 public class Interactable : MonoBehaviour, IInteractable
 {
     [SerializeField] [Tooltip("What the interactable will do before returning interactionResults")]
-    public UnityEvent OnInteract;
-    public event Action OnInteractAction;
+    public UnityEvent<GameObject> OnInteract;
+    public event Action<GameObject> OnInteractAction;
 
     [SerializeField] private List<InteractionResult> interactionResults;
 
@@ -32,11 +32,11 @@ public class Interactable : MonoBehaviour, IInteractable
     /// <summary>
     /// </summary>
     /// <returns>Null if enableInteraction = false; a List of InteractionResult if enableInteraction = true</returns>
-    public List<InteractionResult> Interact()
+    public List<InteractionResult> Interact(GameObject interactionInitiator)
     {
         if (!enableInteraction) return null;
-        OnInteract?.Invoke();
-        OnInteractAction?.Invoke();
+        OnInteract?.Invoke(interactionInitiator);
+        OnInteractAction?.Invoke(interactionInitiator);
         return interactionResults;
     }
 
