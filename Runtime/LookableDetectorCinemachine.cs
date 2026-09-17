@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class LookableDetector : MonoBehaviour
+public class LookableDetectorCinemachine : MonoBehaviour
 {
     [SerializeField] [Tooltip("What should this object do when the Player looks at something Interactable")]
     public UnityEvent<Lookable> OnLookStart;
@@ -26,9 +27,6 @@ public class LookableDetector : MonoBehaviour
     [SerializeField] [Tooltip("The range at which this initiator can detect and interact with interactables.")]
     private float range = 5f;
 
-    [SerializeField] [Tooltip("The camera from which the initiator will cast rays to detect interactables")]
-    private Camera initiatorCamera;
-
     private Lookable _currentLookable;
 
     /// <summary>
@@ -36,15 +34,14 @@ public class LookableDetector : MonoBehaviour
     /// </summary>
     public GameObject SelectedObject { get; private set; }
 
-    // private void Update()
-    // {
-    //     CastRayFromCenter();
-    // }
-
-    //Normal Update is jittery and causes frames where it miscalculates. Fixed fixes (punt unintented but now intended) this
-    private void FixedUpdate()
+    private void OnEnable()
     {
-        CastRayFromCenter();
+        CinemachineCore.CameraUpdatedEvent.AddListener(OnCameraUpdated);
+    }
+
+    private void OnDisable()
+    {
+        CinemachineCore.CameraUpdatedEvent.RemoveListener(OnCameraUpdated);
     }
 
     private void OnDrawGizmosSelected()
@@ -54,9 +51,9 @@ public class LookableDetector : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, range);
     }
 
-    private void CastRayFromCenter()
+    private void OnCameraUpdated(CinemachineBrain brain)
     {
-        var ray = initiatorCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+        var ray = brain.OutputCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
 
         var collider = Physics.Raycast(ray, out var hit, range, raycastHitLayers) ? hit.collider : null;
         var lookable = collider != null ? collider.gameObject.GetComponent<Lookable>() : null;
