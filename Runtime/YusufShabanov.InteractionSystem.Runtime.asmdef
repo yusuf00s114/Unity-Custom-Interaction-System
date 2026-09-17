@@ -4,6 +4,13 @@
     "references": [
         "Unity.Cinemachine"
     ],
+    "versionDefines": [
+        {
+            "name": "com.unity.cinemachine",
+            "expression": "",
+            "define": "CINEMACHINE_PRESENT"
+        }
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

@@ -1,3 +1,5 @@
+#if CINEMACHINE_PRESENT
+
 using System;
 using System.Collections.Generic;
 using Unity.Cinemachine;
@@ -86,3 +88,5 @@ public class LookableDetectorCinemachine : MonoBehaviour
         }
     }
 }
+
+#endif
